@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+
+  
+  
+
+  
+  
+  
+
+  
+
+  <script type="text/javascript" src="a_data/dummy.js"></script>
+
+  
+
+  
+
+  
+
+  
+    <link rel="stylesheet" type="text/css" href="a_data/result-light.css">
+  
+
+  
+
+  <style type="text/css">
+    
+  </style>
+
+  <title> by hegen44</title>
+
+  
+    
+
+
+
+
+<script type="text/javascript">//<![CDATA[
+window.onload=function(){
+var canvas = document.getElementById('mygame');
+var context = canvas.getContext('2d');
+// usual code 
+// working version final
+
+
+var width = 100;
+var height = 100;
+var dragObj;
+var pictureObj = new Array();
+var tableObj = new Array();
+var names = new Array();
+var sources = new Array;
+var BGsources= new Array;
+var Background = new Image();
+var Background2 = new Image();
+var resetButton = new Image();
+var nameText = "";
+var ratio = 3/8;
+var movex = 0;
+var movey = 0;
+
+
+
+var gameObj = function(index){
+	this.pictureA = new Image();
+  
+  if (index <= 6){
+		this.pictureA.X= (width+10) * index+20;// starting x
+		this.pictureA.Y= 20;// starting y
+  } else {
+  	this.pictureA.X = (width+10) * (index-7)+20;
+  	this.pictureA.Y= (height + 20) + 40 ;
+  } 
+	this.pictureA.width=width;//for now
+	this.pictureA.height=height;//for now
+	this.pictureA.src = sources[index];//source of image for image object
+  this.value = index;
+}
+
+
+function createObject(index){
+	var picture = new gameObj(index);
+  pictureObj.push(picture);
+}
+
+//==============================loading content==============================================================
+
+function loadContent(){
+// images can't be lcoal, upload the images to google drive, drop box, or own website //ucsc provides(remember set to public)
+//sources.push('http://piskel-imgstore-b.appspot.com/img/8c680c8a-fc98-11e5-8956-e3b607274d86.gif');
+names.push('Cow');
+sources.push('https://dl.dropbox.com/s/6ya5g2xhxkacyrd/cow%20%283%29.png');
+names.push('Sheep');
+sources.push('https://dl.dropbox.com/s/gn744jf4vqja326/sheep%20%282%29.png');
+names.push('Bird');
+sources.push('https://dl.dropbox.com/s/tqjc4u7sxf58pb0/bird.png');
+names.push('Shark');
+sources.push('https://dl.dropbox.com/s/apngapaxcapoike/shark%20%282%29.png');
+names.push('Half Cow, Half Sheep');
+sources.push('https://dl.dropbox.com/s/cgh8kr576tx4v16/Half%20Cow-Sheep.png');
+names.push('Bird Sheep');
+sources.push('https://dl.dropbox.com/s/q5mwsj67cyy7ryo/Bird%20Sheep.png');
+names.push('Sharks Birds');
+sources.push('https://dl.dropbox.com/s/9dawzv6mghbl3ia/Shark%20Bird.png');
+names.push('Mega Cow');
+sources.push('https://dl.dropbox.com/s/1mm0ueyi7crgtrz/Mega%20cow.png');
+names.push('Two Headed Sheep');
+sources.push('https://dl.dropbox.com/s/72z99ebq0zes0pt/Two%20Head%20Sheep.png');
+names.push('Eagel');
+sources.push('https://dl.dropbox.com/s/e8wawrl9rm4o65v/eagle%20%282%29.png');
+names.push('Long Shark');
+sources.push("https://dl.dropbox.com/s/7vzc5frf9gm89kn/Long%20Shark.png");
+names.push('Dragon');
+sources.push('https://dl.dropbox.com/s/laoocz22ljdvtp3/dragon%20%282%29.png');
+names.push('Red Bull Gives You...');
+sources.push('https://dl.dropbox.com/s/c7hk0bhmy4beii5/Red%20Bull.png');
+names.push('Griffin');
+sources.push('https://dl.dropbox.com/s/v0i3xa2f14hhlpj/Griffin.png');
+
+BGsources.push("https://dl.dropbox.com/s/7ai7dz7zbn8nroj/background1.gif");
+BGsources.push("https://dl.dropbox.com/s/ffnqdkotmn7j6my/baclgrpimd%202.gif");
+BGsources.push("https://dl.dropbox.com/s/jxov0zmo0q1itf9/reset.gif");
+
+Background.src = BGsources[0];
+Background2.src =  BGsources[1];
+resetButton.X = canvas.width - width;
+resetButton.Y= canvas.height - height;
+resetButton.width = width;
+resetButton.height = height;
+resetButton.src =  BGsources[2]; // for now
+
+createObject(0);
+createObject(1);
+createObject(2);
+createObject(3);
+}
+
+
+
+// listener when clicking the picture
+canvas.addEventListener("click",handleclick);
+function handleclick(eventParams){
+
+  if(checkBounds(resetButton, eventParams.clientX+document.documentElement.scrollLeft,
+  eventParams.clientY+document.documentElement.scrollTop)){
+    tableObj.splice(0,tableObj.length);
+  }
+}
+
+
+// listeners for dragging images
+canvas.addEventListener("mousedown",handledown);
+canvas.addEventListener("mouseup",handleup);
+canvas.addEventListener("mousemove",handlemove);
+var dragging = false;
+var selected =  0;
+var intx = 0;
+var inty = 0;
+function handledown(eventParams){
+	if(eventParams.clientY+document.documentElement.scrollTop <= canvas.height*ratio){
+    for(var i=0; i < pictureObj.length; ++i){
+  		if (checkBounds(pictureObj[i].pictureA,
+      		eventParams.clientX+document.documentElement.scrollLeft,
+ 				  eventParams.clientY+document.documentElement.scrollTop)){
+  	  	//selected = pictureObj[i]; // or
+			 dragging = true;
+   	   intx=eventParams.clientX-pictureObj[i].pictureA.X;
+    	 inty=eventParams.clientY-pictureObj[i].pictureA.Y;
+      	var dragObj = new gameObj(0);
+     	 dragObj.pictureA.X = pictureObj[i].pictureA.X;
+       dragObj.pictureA.Y = pictureObj[i].pictureA.Y;
+    	 dragObj.pictureA.src = pictureObj[i].pictureA.src;
+     	 dragObj.pictureA.width = pictureObj[i].pictureA.width;
+     	 dragObj.pictureA.height = pictureObj[i].pictureA.height;
+     	 dragObj.value = pictureObj[i].value;
+       tableObj.push(dragObj);
+       selected = tableObj.length - 1; 
+       break;
+    	} else {
+      // nothing is selected
+      	selected = null;
+      }
+ 		}
+  } else{
+ 	 for(var i=(tableObj.length-1); i >= 0; --i){
+  	if (checkBounds(tableObj[i].pictureA,
+    eventParams.clientX+document.documentElement.scrollLeft,
+  	eventParams.clientY+document.documentElement.scrollTop)){
+  		dragging = true;
+      intx=eventParams.clientX-tableObj[i].pictureA.X;
+    	inty=eventParams.clientY-tableObj[i].pictureA.Y;
+      tableObj.push(tableObj[i]);
+      tableObj.splice(i,1);
+      selected = tableObj.length - 1; 
+      break;
+     }
+  	}
+ 	}
+ }
+function handleup(eventParams){
+  	if((tableObj[selected].pictureA.Y <= canvas.height*ratio - height/2|| 
+    		checkCollusion(tableObj[selected].pictureA, resetButton )&& 
+      	selected != null)){
+    	tableObj.splice(selected,1);
+     } else{
+  	for(var i=(tableObj.length-1);i>=0;--i){
+    	if(i != selected){
+  			if(checkCollusion( tableObj[selected].pictureA,tableObj[i].pictureA)){
+       		var combinNum = checkCombin(tableObj[selected].value,tableObj[i].value);
+        	if(combinNum != null){
+      			var newX = tableObj[i].pictureA.X;
+      			var newY = tableObj[i].pictureA.Y; // or
+        		//var newX = (tableObj[selected].pictureA.X + tableObj[i].pictureA.X)/2;
+         	 	//var newY = (tableObj[selected].pictureA.Y + tableObj[i].pictureA.Y)/2;
+         	 	tableObj.splice(selected,1);
+         	 	var newObj =  new gameObj(combinNum);
+         		 newObj.pictureA.X = newX;
+         		 newObj.pictureA.Y = newY;
+         		 tableObj.push(newObj);
+         		 tableObj.splice(i,1);
+        	  }
+    	  	break;
+      }
+     }
+   	}
+   }
+	dragging = false;
+ }
+function handlemove(eventParams){
+	if(dragging)
+  {
+  	// moving the actual objecct
+  	//pictureObj[selected].pictureA.X	= eventParams.clientX-intx;
+   //	pictureObj[selected].pictureA.Y	= eventParams.clientY-inty;
+   // moving the copy of the object
+    //ovex	= eventParams.clientX-intx;
+   	//movey	= eventParams.clientY-inty;
+      	tableObj[selected].pictureA.X	= eventParams.clientX-intx;
+   tableObj[selected].pictureA.Y	= eventParams.clientY-inty;
+  }
+}
+
+// function that check the bound
+function checkBounds(image,xpos,ypos){
+	if (xpos < image.X + image.width && ypos < image.Y + image.height && xpos > image.X && ypos > image.Y) {return true;} 
+} 
+
+// function to check colluison
+function checkCollusion(image1, image2){
+	if ((image1.X + width < image2.X) || (image1.X > image2.X + width) || 
+  			(image1.Y + height < image2.Y) || (image1.Y > image2.Y + height)){
+  	return false;
+  }
+  return true;
+}
+
+function checkExist(value){
+var checked = false;
+ for(var j=0; j< pictureObj.length; ++j){
+ 		if(value== pictureObj[j].value){checked = true; break;} 
+ }
+	 if(!checked){
+ 		createObject(value);
+    }
+}
+
+function checkCombin(value1, value2){
+	if(value1 == value2){
+		if(value1 == 0){checkExist(7); return 7;}
+ 	 	else if(value1 == 1){checkExist(8); return 8;}
+  	else if(value1 == 2){checkExist(9); return 9;}
+ 	 	else if(value1 == 3){checkExist(10); return 10;}
+	} else if(value1 == 2 || value2 == 2){
+		if(value1 == 1 || value2 ==1){checkExist(5); return 5;}
+  	else if(value1 == 3 || value2 ==3){checkExist(6); return 6;}
+	} else if(value1 == 9 || value2 == 9){
+		if(value1 == 10 || value2 ==10){checkExist(11); return 11;}
+ 	 else if(value1 == 4 || value2 ==4){checkExist(12); return 12;}
+ 	 else if(value1 == 11 || value2 ==11){checkExist(13); return 13;}
+	} else if (value1 + value2 == 1){checkExist(4); return 4;} 
+	return null;
+}
+
+
+function update(){
+//if(dragging){
+	//  tableObj[tableObj.length-1].pictureA.X	= movex;
+   //	tableObj[tableObj.length-1].pictureA.Y	= movey;
+ 	//}
+}
+
+
+function draw(){
+	canvas.width = canvas.width; // clear buffer
+  // background
+  context.drawImage(Background, 0,0, canvas.width,canvas.height);
+  context.drawImage(Background2,0,0, canvas.width, canvas.height*ratio)
+  
+  // drawing the score
+  context.fillStyle="white"
+    context.font = "30px Verdana";
+  context.fillText(pictureObj.length + "/14", 
+     resetButton.X +  resetButton.width/2 - context.measureText(pictureObj.length + "/14").width/2,
+    	resetButton.Y-5);
+    
+  context.drawImage(resetButton, resetButton.X, resetButton.Y, resetButton.width, resetButton.height);
+  for(var i=0; i < pictureObj.length; ++i){
+	context.drawImage(pictureObj[i].pictureA, 
+  	pictureObj[i].pictureA.X, pictureObj[i].pictureA.Y, 
+  	pictureObj[i].pictureA.width, pictureObj[i].pictureA.height);
+    // draw text under picture
+  context.font = "10px Verdana";
+  context.fillText(names[pictureObj[i].value], 
+    pictureObj[i].pictureA.X+pictureObj[i].pictureA.width/2 - context.measureText(names[pictureObj[i].value]).width/2,
+    pictureObj[i].pictureA.Y + pictureObj[i].pictureA.height + 10);
+   }
+ //  context.save();
+ //   context.globalAlpha = 0.7;  
+    for(var i=0; i < tableObj.length; ++i){
+  		context.drawImage(tableObj[i].pictureA, 
+  			tableObj[i].pictureA.X,tableObj[i].pictureA.Y, 
+  			tableObj[i].pictureA.width, tableObj[i].pictureA.height);
+    }
+    
+//    context.restore();
+}
+//  context.rect(200,canvas.height/2+(canvas.height/4-height/2),width,height);
+	//context.stroke();
+  /*
+    context.beginPath();
+	context.lineWidth="10";
+	context.strokeStyle="#4c2926";
+	context.rect(5,5,canvas.width-10,canvas.height * 3/8 -10);
+	context.stroke();
+  */
+
+//game loop
+function game_loop(){
+	update();
+	draw();
+}
+
+//looping the game loop
+loadContent();
+setInterval(game_loop,30); // call the function at this frequence
+}//]]> 
+
+</script>
+
+  
+</head>
+
+<body>
+  <canvas id="mygame" width="800" height="800"></canvas> 
+
+
+  
+
+
+
+
+</body></html>
